@@ -1,0 +1,111 @@
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { login } from "../../store/reducers/authSlice";
+import { useNavigate, Link } from "react-router-dom";
+import { loginUser } from "../../services/api.ts";
+import styles from './Login.module.sass';
+
+export default function Login() {
+    const [formData, setFormData] = useState({
+        username: "",
+        password: ""
+    });
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        setError(null);
+    };
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await loginUser(formData);
+            console.log('Server response after login:', response);
+
+            const { access, refresh } = response;
+            const username = formData.username; // Беремо username з форми
+
+            // Зберігаємо ВСІ необхідні дані в localStorage
+            localStorage.setItem('accessToken', access);
+            localStorage.setItem('username', username);
+            if (refresh) {
+                localStorage.setItem('refreshToken', refresh);
+            }
+
+            // Оновлюємо Redux store
+            dispatch(login({
+                user: { username },
+                tokens: {
+                    access,
+                    refresh: refresh || null
+                }
+            }));
+
+            navigate("/home");
+        } catch (error) {
+            console.error('Login error:', error);
+            setError(error.response?.data?.message || "Login failed. Please try again.");
+
+            // Очищаємо тільки токени при помилці (username залишаємо)
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className={styles.container}>
+            <form onSubmit={handleLogin} className={styles.form}>
+                <h1 className={styles.title}>Login</h1>
+
+                {error && <div className={styles.error}>{error}</div>}
+
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    className={styles.input}
+                    required
+                    disabled={isLoading}
+                />
+
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={styles.input}
+                    required
+                    disabled={isLoading}
+                    minLength={6}
+                />
+
+                <button
+                    type="submit"
+                    className={styles.button}
+                    disabled={isLoading}
+                >
+                    {isLoading ? "Logging in..." : "Login"}
+                </button>
+            </form>
+            <Link to="/register" className={styles.registerButton}>
+                Create new account
+            </Link>
+        </div>
+    );
+}

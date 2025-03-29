@@ -1,0 +1,76 @@
+.container
+  display: flex
+  min-height: 100vh
+  align-items: center
+  justify-content: center
+  background-color: #f3f4f6
+  margin: 0 auto
+  min-width: 100vw
+  flex-direction: column
+
+
+.form
+  width: 100%
+  max-width: 400px
+  background-color: #ffffff
+  padding: 24px
+  border-radius: 12px
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)
+
+.title
+  font-size: 24px
+  font-weight: bold
+  color: #1f2937
+  text-align: center
+  margin-bottom: 16px
+
+.input
+  width: 100%
+  padding: 12px
+  border: 1px solid #d1d5db
+  border-radius: 8px
+  outline: none
+  transition: border-color 0.2s ease-in-out
+  color: black
+  &:not(:last-child)
+    margin-bottom: 10px
+
+  &:focus
+    border-color: #3b82f6  // Оновлено на повний HEX
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5)
+
+  &::placeholder
+    color: #9ca3af
+    font-style: italic
+
+.button
+  width: 100%
+  background-color: #3b82f6
+  color: #ffffff
+  padding: 12px
+  border-radius: 8px
+  font-weight: 600
+  cursor: pointer
+  transition: background-color 0.2s ease-in-out
+  border: none
+
+  &:hover
+    background-color: #2563eb
+
+.loginButton
+  display: block
+  text-align: center
+  margin-top: 16px
+  padding: 12px
+  color: #3b82f6
+  background-color: transparent
+  border: none
+  border-radius: 8px
+  font-weight: 600
+  cursor: pointer
+  transition: background-color 0.2s ease-in-out
+  text-decoration: none
+
+  &:hover
+    background-color: #f3f4f6
+    text-decoration: underline
