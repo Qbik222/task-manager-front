@@ -1,8 +1,9 @@
 import { useEffect, ReactNode } from 'react';
 import { useDispatch } from 'react-redux';
-import { login, syncAuthState } from '../../store/reducers/authSlice.ts';
+import {login, logout, syncAuthState} from '../../store/reducers/authSlice.ts';
 import { verifyToken } from '../../services/api.ts';
 import { AppDispatch } from '../../store/store.ts';
+import {useNavigate} from "react-router-dom";
 
 // interface UserData {
 //     username: string;
@@ -15,6 +16,8 @@ interface AuthInitializerProps {
 export default function AuthInitializer({ children }: AuthInitializerProps) {
     const dispatch: AppDispatch = useDispatch();
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         const initializeAuth = async () => {
             // Спочатку синхронізуємо стан між localStorage і Redux
@@ -26,29 +29,32 @@ export default function AuthInitializer({ children }: AuthInitializerProps) {
             if (accessToken) {
                 try {
                     // Перевіряємо токен на сервері
-                    // const userData = verifyToken(accessToken);
-                    const userData = true;
+                    const userAuth = await verifyToken(accessToken);
 
-                    // Оновлюємо Redux стан
-                    dispatch(login({
-                        user: {
-                            username: localStorageUsername || 'guest'
-                        },
-                        tokens: {
-                            access: accessToken,
-                            refresh: localStorage.getItem('refreshToken') || undefined
-                        }
-                    }));
+                    console.log(userAuth)
 
-                    // Додатково синхронізуємо username
-                    if (userData.username && !localStorageUsername) {
-                        localStorage.setItem('username', userData.username);
+                    if(userAuth){
+                        dispatch(login({
+                            user: {
+                                username: localStorageUsername || 'guest'
+                            },
+                            tokens: {
+                                access: accessToken,
+                            }
+                        }));
+                        dispatch(syncAuthState());
+                    }else{
+                        dispatch(logout());
+                        dispatch(syncAuthState());
+                        navigate("/login")
                     }
+
                 } catch (error) {
                     console.error('Token verification failed:', error);
                     // Якщо токен невалідний - очищаємо
-                    // localStorage.removeItem('accessToken');
-                    // localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('username');
                     // Але username може залишитись
                 }
             } else if (localStorageUsername) {
@@ -58,7 +64,7 @@ export default function AuthInitializer({ children }: AuthInitializerProps) {
         };
 
         initializeAuth();
-    }, [dispatch]);
+    }, [dispatch, navigate]);
 
     return <>{children}</>;
 }

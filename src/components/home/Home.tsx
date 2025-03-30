@@ -1,105 +1,92 @@
+// Home.tsx
 import styles from './home.module.sass';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store.ts';
-import { useState, useRef, useEffect } from 'react';
-import { logout } from '../../store/reducers/authSlice';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaTimes } from 'react-icons/fa'; // Додано іконку хрестика
+import { getProjects } from '../../services/api.ts';
+import Menu from '../menu/Menu.tsx'
 
 const Home = () => {
     const username = useSelector((state: RootState) => state.auth.user?.username);
-    const [showDropdown, setShowDropdown] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const userContainerRef = useRef<HTMLDivElement>(null);
-    const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        dispatch(logout());
-        navigate('/login');
-    };
+    interface Project {
+        id: number;
+        name: string;
+        description: string;
+        users: number[];
+    }
 
-    const handleCloseDropdown = () => {
-        setShowDropdown(false);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchProjects = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem('accessToken');
+            if (!token) throw new Error('No authentication token found');
+
+            const projectsData = await getProjects(token);
+            setProjects(projectsData);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to fetch projects');
+            console.error('Error fetching projects:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (
-                dropdownRef.current &&
-                !dropdownRef.current.contains(event.target as Node) &&
-                userContainerRef.current &&
-                !userContainerRef.current.contains(event.target as Node)
-            ) {
-                setShowDropdown(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        fetchProjects();
     }, []);
+
+    const handleProjectClick = (projectId: number, projectName: string) => {
+        const formattedName = projectName
+            .toLowerCase()
+            .replace(/\s+/g, '_')
+            .replace(/[^\w-]/g, '');
+        navigate(`/projects/${formattedName}?id=${projectId}`);
+    };
 
     return (
         <div className={styles.home}>
             <main className={styles.main}>
+                {username && <Menu />}
                 <div className={styles.projects}>
                     <h1 className={styles.title}>my projects</h1>
-                    <div className={styles.projectWrap}>
-                        <div className={styles.projectCard}>
-                            <h2 className={styles.projectTitle}>project1</h2>
-                        </div>
-                    </div>
+                    {loading ? (
+                        <div>Loading projects...</div>
+                    ) : error ? (
+                        <div>Error: {error}</div>
+                    ) : projects.length === 0 ? (
+                        <div>No projects found</div>
+                    ) : (
+                        projects.map((project) => (
+                            <div
+                                key={project.id}
+                                className={styles.projectWrap}
+                                onClick={() => handleProjectClick(project.id, project.name)}
+                            >
+                                <div className={styles.projectCard}>
+                                    <h2 className={styles.projectTitle}>{project.name}</h2>
+                                    {/*<p className={styles.projectDescription}>{project.description}</p>*/}
+                                    <div className={styles.projectUsers}>
+                                        Participants: {project.users.length}
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
-
                 <div className={styles.newProjectWrapper}>
                     <h2>create new project</h2>
                     <button className={styles.newProjectButton}>+</button>
                 </div>
             </main>
 
-            {username && (
-                <div
-                    className={styles.userContainer}
-                    onMouseEnter={() => setShowDropdown(true)}
-                    ref={userContainerRef}
-                >
-                    <div className={styles.user}>
-                        <span>{username}</span>
-                    </div>
 
-                    {showDropdown && (
-                        <div
-                            className={styles.dropdownMenu}
-                            ref={dropdownRef}
-                        >
-                            <div
-                                className={styles.closeButton}
-                                onClick={handleCloseDropdown}
-                            >
-                                <FaTimes /> {/* Іконка хрестика */}
-                            </div>
-                            <button
-                                className={styles.dropdownItem}
-                                onClick={handleLogout}
-                            >
-                                Logout
-                            </button>
-                            <button
-                                className={styles.dropdownItem}
-                            >
-                                button
-                            </button>
-                            <button
-                                className={styles.dropdownItem}
-                            >
-                                button
-                            </button>
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 };

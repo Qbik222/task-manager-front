@@ -1,3 +1,4 @@
+// home.module.sass
 .home
   display: flex
   min-height: 100vh
@@ -8,9 +9,9 @@
 .projects
   display: flex
   flex-direction: column
+  color: black
 
 .title
-  margin: 0
   font-size: 24px
   color: #333333
   text-align: center
@@ -19,11 +20,12 @@
 
 .main
   flex: 1
-  padding: 20px
+  padding: 20px 20px 0 0
   display: flex
   align-items: center
   justify-content: center
   gap: 20px
+  max-height: 100vh
 
 .projectWrap
   width: fit-content
@@ -36,14 +38,20 @@
   padding: 15px
   align-items: center
 
-
 .projectCard
+  display: flex
+  align-items: center
+  justify-content: space-between
   width: 80%
   max-width: 800px
   padding: 20px
   background-color: #ffffff
   border-radius: 8px
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
+  transition: all .3s ease
+  &:hover
+    cursor: pointer
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3)
 
 .projectTitle
   margin: 0
@@ -74,8 +82,6 @@
   &:hover
     cursor: pointer
     background-color:  rgba(#007bff, .7)
-
-
   &:hover
     background-color: #0056b3
 
@@ -89,77 +95,3 @@
   margin: 0
   font-size: 14px
   color: #666666
-
-.user
-  position: fixed
-  top: 10px
-  right: 10px
-  display: flex
-  flex-direction: column
-  align-items: center
-  justify-content: center
-  background: #0056b3
-  border-radius: 10px
-  padding: 20px
-  width: fit-content
-  height: fit-content
-
-
-.userContainer
-  position: relative
-  display: inline-block
-
-.dropdownMenu
-  position: fixed
-  display: flex
-  flex-direction: column
-  right: 15px
-  top: 110px
-  background: white
-  border: 1px solid #ddd
-  border-radius: 4px
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .5)
-  min-width: 200px
-  padding: 10px
-  z-index: 1000
-  gap: 10px
-  button
-    text-align: center
-    color: white
-    background: rgba(#0056b3, .8)
-    width: 100px
-    transition: all .4s ease-in-out
-    &:hover
-      cursor: pointer
-      background: #0056b3
-
-
-
-
-.dropdownItem
-  display: block
-  width: 100%
-  padding: 8px 16px 8px 16px
-  text-align: left
-  background: none
-  border: none
-  cursor: pointer
-  &:hover
-    background: #f5f5f5
-
-.closeButton
-  display: flex
-  align-items: center
-  justify-content: center
-  border-radius: 2px
-  position: absolute
-  top: -5px
-  transform: translateY(-100%)
-  right: 0px
-  width: 20px
-  height: 20px
-  background: rgba(0, 0, 0, .4)
-  transition: all .4s ease-in-out
-  &:hover
-    cursor: pointer
-    background: rgba(0, 0, 0, .6)

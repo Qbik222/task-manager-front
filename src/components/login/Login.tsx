@@ -39,16 +39,12 @@ export default function Login() {
             // Зберігаємо ВСІ необхідні дані в localStorage
             localStorage.setItem('accessToken', access);
             localStorage.setItem('username', username);
-            if (refresh) {
-                localStorage.setItem('refreshToken', refresh);
-            }
 
             // Оновлюємо Redux store
             dispatch(login({
                 user: { username },
                 tokens: {
                     access,
-                    refresh: refresh || null
                 }
             }));
 
@@ -59,7 +55,6 @@ export default function Login() {
 
             // Очищаємо тільки токени при помилці (username залишаємо)
             localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
         } finally {
             setIsLoading(false);
         }

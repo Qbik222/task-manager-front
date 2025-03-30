@@ -4,6 +4,8 @@ import Home from "./components/home/Home";
 import Login from "./components/login/Login";
 import Register from "./components/register/Register";
 import { ReactNode } from "react";
+import AuthInitializer from "./components/authinit/AuthInitializer.tsx";
+import Project from "./components/project/Project.tsx";
 
 // Тип для стану автентифікації
 interface AuthState {
@@ -40,37 +42,62 @@ const PublicRoute = ({ children }: PublicRouteProps) => {
   return checkAuth() ? <Navigate to="/home" replace /> : children;
 };
 
+// Обгортка для роутів з AuthInitializer
+const RouteWrapper = ({ children }: { children: ReactNode }) => (
+    <AuthInitializer>{children}</AuthInitializer>
+);
+
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: checkAuth() ? (
-        <Navigate to="/home" replace />
-    ) : (
-        <Navigate to="/login" replace />
+    element: (
+        <RouteWrapper>
+          {checkAuth() ? (
+              <Navigate to="/home" replace />
+          ) : (
+              <Navigate to="/login" replace />
+          )}
+        </RouteWrapper>
     ),
   },
   {
     path: "/home",
     element: (
-        <ProtectedRoute>
-          <Home />
-        </ProtectedRoute>
+        <RouteWrapper>
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        </RouteWrapper>
     ),
   },
   {
     path: "/login",
     element: (
-        <PublicRoute>
-          <Login />
-        </PublicRoute>
+        <RouteWrapper>
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        </RouteWrapper>
     ),
   },
   {
     path: "/register",
     element: (
-        <PublicRoute>
-          <Register />
-        </PublicRoute>
+        <RouteWrapper>
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        </RouteWrapper>
     ),
   },
+    {
+        path: "/projects/:projectName",
+        element: (
+            <RouteWrapper>
+                <ProtectedRoute>
+                    <Project />
+                </ProtectedRoute>
+            </RouteWrapper>
+        ),
+    }
 ]);
