@@ -1,7 +1,7 @@
 .container
   display: flex
   align-items: center
-  padding: 20px 2rem 0 0
+  padding: 0 2rem 0 0
   min-height: 100vh
   max-height: 100vh
   overflow: hidden
@@ -57,11 +57,14 @@
   display: flex
   align-items: center
   gap: 0.5rem
-  background: #f0f0f0
+  background: transparent
   border: none
   padding: 0.5rem 1rem
   border-radius: 4px
   cursor: pointer
+  width: 100%
+  text-align: center
+  justify-content: center
   transition: background-color 0.2s
   &:hover
     background-color: #e0e0e0
@@ -94,7 +97,7 @@
 // Sections layout
 .sections
   display: grid
-  grid-template-columns: 4fr 1fr
+  grid-template-columns: 1fr
   gap: 2rem
   flex-grow: 1
   overflow: hidden
@@ -107,8 +110,8 @@
   border-radius: 8px
   padding: 1.5rem
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
-  overflow-y: auto
-  max-height: calc(100vh - 300px)
+  max-height: calc(100vh - 200px)
+  overflow: hidden
   h2
     font-size: 1.5rem
     margin-bottom: 1.5rem
@@ -126,7 +129,10 @@
 
 // Tasks section
 .taskList
-  min-height: 200px
+  height: 95%
+  padding: 1rem
+  background: #ededed
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
 
 .taskPlaceholder
   color: #999
@@ -236,3 +242,69 @@
   width: 60px
   height: 14px
   @extend .skeletonText
+
+.taskBoard
+  display: flex
+  gap: 15px
+  overflow-x: auto
+  padding: 1rem 0
+  height: 92%
+
+.taskColumn, .newTaskColumn
+  width: 300px
+  //padding: 1rem
+  border-radius: 4px
+  flex-shrink: 0
+  height: 100%
+
+  h3
+    font-size: 1.2rem
+    margin-bottom: 1rem
+    text-align: center
+
+.newTaskColumn
+  padding: 0
+
+.inputContainer
+  display: flex
+  align-items: center
+  flex-direction: column
+  gap: 8px
+  width: 100%
+  padding: 8px
+  background-color: #f8f9fa
+  border-radius: 4px
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1)
+
+.columnInput
+  flex-grow: 1
+  padding: 6px 10px
+  font-size: 14px
+  border: 1px solid #ccc
+  border-radius: 4px
+  outline: none
+  width: 100%
+
+.confirmButton
+  padding: 6px 10px
+  font-size: 14px
+  color: #fff
+  background-color: #4a6baf
+  border: none
+  border-radius: 2px
+  cursor: pointer
+  margin-right: 5px
+  text-transform: uppercase
+
+  &:hover
+    background-color: rgba(#4a6baf, .9)
+
+.submitWrapper
+  display: flex
+  align-items: center
+  justify-content: flex-start
+  width: 100%
+  svg
+    cursor: pointer
+
+

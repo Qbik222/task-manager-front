@@ -5,93 +5,127 @@
   background-color: #f5f5f5
   font-family: Arial, sans-serif
   min-width: 100vw
-
-.projects
-  display: flex
-  flex-direction: column
   color: black
-
-.title
-  font-size: 24px
-  color: #333333
-  text-align: center
-  text-transform: uppercase
-  margin-bottom: 10px
 
 .main
   flex: 1
-  padding: 20px 20px 0 0
-  display: flex
-  align-items: center
-  justify-content: center
-  gap: 20px
-  max-height: 100vh
-
-.projectWrap
-  width: fit-content
-  min-width: 500px
-  display: flex
-  flex-direction: column
-  background-color: #ffffff
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
-  min-height: 500px
-  padding: 15px
-  align-items: center
-
-.projectCard
-  display: flex
-  align-items: center
-  justify-content: space-between
-  width: 80%
-  max-width: 800px
   padding: 20px
-  background-color: #ffffff
-  border-radius: 8px
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
-  transition: all .3s ease
-  &:hover
-    cursor: pointer
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3)
-
-.projectTitle
-  margin: 0
-  font-size: 18px
-  color: #444444
-
-.newProjectWrapper
   display: flex
   flex-direction: column
-  width: 500px
   align-items: center
-  h2
-    color: black
-    font-size: 24px
-    text-transform: uppercase
+  max-height: calc(100vh - 90px)
+  margin-top: 90px
+  overflow-y: auto
+  position: relative
 
-.newProjectButton
-  padding: 12px 24px
-  background-color:  rgba(#007bff, .5)
-  color: white
-  border: none
-  border-radius: 4px
-  font-size: 196px
-  cursor: pointer
-  width: 100%
-  height: 500px
-  transition: background-color 0.6s ease
-  &:hover
-    cursor: pointer
-    background-color:  rgba(#007bff, .7)
-  &:hover
-    background-color: #0056b3
+.header
+  margin-bottom: 20px
 
-.footer
-  padding: 10px
-  text-align: center
-  background-color: #ffffff
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1)
+.title
+  font-size: 24px
+  font-weight: bold
+  margin-bottom: 8px
+  color: #333
+  position: absolute
+  left: 10px
+  top: 10px
 
-.dimensions
-  margin: 0
+.date
   font-size: 14px
-  color: #666666
+  color: #666
+  //margin-bottom: 8px
+  margin: 0 auto
+  text-align: center
+
+.greeting
+  font-size: 16px
+  color: #333
+
+.stats
+  display: flex
+  margin-bottom: 30px
+  padding-bottom: 15px
+  border-bottom: 1px solid #e0e0e0
+
+.statItem
+  display: flex
+  flex-direction: column
+
+.statLabel
+  font-weight: bold
+  margin-bottom: 5px
+  text-align: center
+
+.statValues
+  display: flex
+  gap: 15px
+  font-size: 14px
+  color: #666
+
+.sections
+  display: grid
+  grid-template-columns: repeat(auto-fill, minmax(45%, 1fr))
+  gap: 20px
+  width: 100%
+
+.section
+  background-color: white
+  border-radius: 8px
+  padding: 15px
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1)
+
+.sectionTitle
+  font-size: 16px
+  font-weight: bold
+  margin-bottom: 15px
+  display: flex
+  align-items: center
+  gap: 5px
+
+.redDot
+  color: red
+
+.taskStatus
+  font-size: 14px
+  padding: 5px 0
+  border-bottom: 1px solid #f0f0f0
+  cursor: pointer
+  &:hover
+    background-color: #f9f9f9
+
+.taskList, .projectList
+  list-style: none
+  padding: 0
+  margin: 10px 0 0 0
+
+.taskItem, .projectListItem
+  padding: 8px 0
+  border-bottom: 1px solid #f0f0f0
+  font-size: 14px
+  cursor: pointer
+  &:hover
+    background-color: #f9f9f9
+
+.projectItem
+  padding: 8px 0
+  border-bottom: 1px solid #f0f0f0
+  font-size: 14px
+  display: flex
+  justify-content: space-between
+  cursor: pointer
+  &:hover
+    background-color: #f9f9f9
+
+.date
+  color: #999
+  font-size: 12px
+
+.subtitle
+  font-size: 14px
+  color: #666
+  margin: 10px 0 5px 0
+
+.taskAlert
+  font-size: 14px
+  color: #ff6b6b
+  margin-bottom: 10px

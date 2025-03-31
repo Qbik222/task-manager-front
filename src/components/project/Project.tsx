@@ -2,26 +2,28 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getProjectById } from '../../services/api.ts';
 import styles from './Project.module.sass';
-import { FaArrowLeft, FaEdit, FaTrash, FaUsers } from 'react-icons/fa';
+import { FaArrowLeft, FaEdit, FaTrash, FaPlus, FaTimes } from 'react-icons/fa';
 import Menu from '../menu/Menu.tsx';
-
-interface Project {
-    id: number;
-    name: string;
-    description: string;
-    users: { id: number; username: string }[];
-    created_at: string;
-}
+import { useDispatch, useSelector } from 'react-redux';
+import { addColumn, updateColumnsForProject } from '../../store/reducers/columnSlice.ts';
 
 const Project = () => {
     const { projectName } = useParams<{ projectName: string }>();
     const searchParams = new URLSearchParams(location.search);
     const projectId = searchParams.get('id');
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    // Отримуємо колонки з Redux store
+    const columns = useSelector((state: RootState) =>
+        state.columns.columns.filter(col => col.projectId === parseInt(projectId || '0'))
+    );
 
     const [project, setProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isAddingColumn, setIsAddingColumn] = useState(false);
+    const [newColumnName, setNewColumnName] = useState('');
 
     useEffect(() => {
         const fetchProject = async () => {
@@ -33,6 +35,12 @@ const Project = () => {
 
                 const projectData = await getProjectById(token, parseInt(projectId));
                 setProject(projectData);
+
+                // Якщо потрібно завантажити колонки з API, а не з localStorage:
+                // dispatch(updateColumnsForProject({
+                //     projectId: parseInt(projectId),
+                //     columns: projectData.columns // Припускаючи, що API повертає колонки
+                // }));
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch project');
                 console.error('Error fetching project:', err);
@@ -42,44 +50,44 @@ const Project = () => {
         };
 
         fetchProject();
-    }, [projectId]);
+    }, [projectId, dispatch]);
 
     const handleBack = () => {
         navigate('/');
     };
 
-    // Skeleton loader components
-    const ProjectTitleSkeleton = () => (
-        <div className={styles.skeletonTitle}></div>
-    );
+    const startAddingColumn = () => {
+        setIsAddingColumn(true);
+    };
 
-    const ProjectDescriptionSkeleton = () => (
-        <div className={styles.skeletonText} style={{ width: '80%' }}></div>
-    );
+    const handleAddColumn = () => {
+        if (newColumnName.trim() && projectId) {
+            const newColumn = {
+                id: Date.now(),
+                name: newColumnName.trim(),
+                projectId: parseInt(projectId)
+            };
+            dispatch(addColumn(newColumn));
+            setNewColumnName('');
+            setIsAddingColumn(false);
+        }
+    };
 
-    const ProjectMetaSkeleton = () => (
-        <div className={styles.skeletonText} style={{ width: '40%' }}></div>
-    );
+    const cancelAddingColumn = () => {
+        setIsAddingColumn(false);
+        setNewColumnName('');
+    };
 
-    const UserCardSkeleton = () => (
-        <div className={styles.userCard}>
-            <div className={`${styles.userAvatar} ${styles.skeletonAvatar}`}></div>
-            <div className={`${styles.userName} ${styles.skeletonText}`} style={{ width: '60px' }}></div>
-        </div>
-    );
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleAddColumn();
+        } else if (e.key === 'Escape') {
+            cancelAddingColumn();
+        }
+    };
 
-    const TaskPlaceholderSkeleton = () => (
-        <div className={styles.taskPlaceholder}>
-            <div className={styles.skeletonText} style={{ width: '100%', height: '100px' }}></div>
-        </div>
-    );
-
-    if (error) return (
-        <div className={styles.container}>
-            <Menu />
-            Error: {error}
-        </div>
-    );
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
 
     return (
         <div className={styles.container}>
@@ -90,84 +98,66 @@ const Project = () => {
                     <button onClick={handleBack} className={styles.backButton}>
                         <FaArrowLeft /> Back to projects
                     </button>
-
-                    <div className={styles.actions}>
-                        {loading ? (
-                            <>
-                                <div className={`${styles.actionButton} ${styles.skeletonButton}`}></div>
-                                <div className={`${styles.actionButton} ${styles.deleteButton} ${styles.skeletonButton}`}></div>
-                            </>
-                        ) : (
-                            <>
-                                <button className={styles.actionButton}>
-                                    <FaEdit /> Edit
-                                </button>
-                                <button className={`${styles.actionButton} ${styles.deleteButton}`}>
-                                    <FaTrash /> Delete
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                <div className={styles.projectInfo}>
-                    {loading ? (
-                        <ProjectTitleSkeleton />
-                    ) : (
-                        <h1 className={styles.projectTitle}>{project?.name}</h1>
-                    )}
-
-                    {loading ? (
-                        <>
-                            <ProjectDescriptionSkeleton />
-                            <ProjectDescriptionSkeleton />
-                        </>
-                    ) : (
-                        <p className={styles.projectDescription}>{project?.description}</p>
-                    )}
-
-                    {loading ? (
-                        <ProjectMetaSkeleton />
-                    ) : (
-                        <div className={styles.projectMeta}>
-                            <span>Created: {new Date(project?.created_at || '').toLocaleDateString()}</span>
-                        </div>
-                    )}
                 </div>
 
                 <div className={styles.sections}>
                     <section className={styles.tasksSection}>
                         <h2>Tasks</h2>
-                        <div className={styles.taskList}>
-                            {loading ? (
-                                <TaskPlaceholderSkeleton />
-                            ) : (
-                                <div className={styles.taskPlaceholder}>No tasks yet</div>
-                            )}
-                        </div>
-                    </section>
-
-                    <section className={styles.usersSection}>
-                        <h2><FaUsers /> Team Members</h2>
-                        <div className={styles.userList}>
-                            {loading ? (
-                                <>
-                                    <UserCardSkeleton />
-                                    <UserCardSkeleton />
-                                    <UserCardSkeleton />
-                                </>
-                            ) : project?.users && project.users.length > 0 ? (
-                                project.users.map(user => (
-                                    <div key={`user-${user.id}`} className={styles.userCard}>
-                                        <div className={styles.userAvatar}>
-                                            {user.username?.charAt(0).toUpperCase()}
-                                        </div>
-                                        <span className={styles.userName}>{user.username}</span>
+                        <div className={styles.taskBoard}>
+                            {columns.map(column => (
+                                <div key={column.id} className={styles.taskColumn}>
+                                    <h3>{column.name}</h3>
+                                    <div className={styles.taskList}>
+                                        <div className={styles.taskPlaceholder}>No tasks</div>
                                     </div>
-                                ))
-                            ) : (
-                                <div className={styles.noUsers}>No team members</div>
-                            )}
+                                </div>
+                            ))}
+
+                            <div className={styles.newTaskColumn}>
+                                <div className={styles.actions}>
+                                    {!isAddingColumn ? (
+                                        <button
+                                            className={styles.actionButton}
+                                            onClick={startAddingColumn}
+                                        >
+                                            <FaPlus /> Add Column
+                                        </button>
+                                    ) : (
+                                        <div
+                                            className={styles.inputContainer}
+                                            onBlur={(e) => {
+                                                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                                                    cancelAddingColumn();
+                                                }
+                                            }}
+                                        >
+                                            <input
+                                                type="text"
+                                                className={styles.columnInput}
+                                                placeholder="Enter column name"
+                                                value={newColumnName}
+                                                onChange={(e) => setNewColumnName(e.target.value)}
+                                                onKeyDown={handleKeyPress}
+                                                autoFocus
+                                            />
+                                            <div className={styles.submitWrapper}>
+                                                <button
+                                                    className={styles.confirmButton}
+                                                    onClick={handleAddColumn}
+                                                    tabIndex={0}
+                                                >
+                                                    add column
+                                                </button>
+                                                <div
+                                                    onClick={cancelAddingColumn}
+                                                >
+                                                    <FaTimes size={30} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </section>
                 </div>

@@ -6,11 +6,6 @@ interface RegisterData {
     password: string;
 }
 
-interface LoginCredentials {
-    email: string;
-    password: string;
-}
-
 interface ApiResponse {
     message?: string;
     [key: string]: any;
@@ -23,15 +18,58 @@ interface Project {
     users: number[];
 }
 
-export const getProjectById = async (token: string, id: number): Promise<Project> => {
-    const response = await fetch(`${BASE_URL}/api/projects/${id}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+interface Task {
+    id: number;
+    title: string;
+    description: string;
+    created_at: string;
+    due_date: string;
+    is_complete: boolean;
+    assigned_to: number;
+    project: number;
+    labels: string[];
+}
+
+export const getTasks = async (token: string): Promise<Task[]> => {
+    try {
+        const response = await fetch(`${BASE_URL}/api/tasks/`, {
+            method: "GET",
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    });
-    if (!response.ok) throw new Error('Failed to fetch project');
-    return response.json();
+
+        const data = await response.json();
+        return Array.isArray(data) ? data : [data];
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+        throw error;
+    }
+};
+
+export const getProjectById = async (token: string, id: number): Promise<Project> => {
+    try {
+        const response = await fetch(`${BASE_URL}/api/projects/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch project');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching project:', error);
+        throw error;
+    }
 };
 
 export const getProjects = async (token: string): Promise<Project[]> => {
@@ -48,13 +86,13 @@ export const getProjects = async (token: string): Promise<Project[]> => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        return await response.json() as Project[];
+        const data = await response.json();
+        return Array.isArray(data) ? data : [data];
     } catch (error) {
         console.error('Error fetching projects:', error);
         throw error;
     }
 };
-
 export const verifyToken = async (token: string): Promise<boolean> => {
     try {
         const response = await fetch(`${BASE_URL}/api/token/verify/`, {
