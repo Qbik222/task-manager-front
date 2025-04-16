@@ -54,7 +54,7 @@ export const getTasks = async (token: string): Promise<Task[]> => {
 
 export const getProjectById = async (token: string, id: number): Promise<Project> => {
     try {
-        const response = await fetch(`${BASE_URL}/api/projects/${id}`, {
+        const response = await fetch(`${BASE_URL}/project/${id}/full`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'

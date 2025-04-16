@@ -1,20 +1,23 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import ProjectHeader from './header/Header.tsx';
+import ProjectBoard from './board/Board.tsx';
 import { useEffect, useState } from 'react';
 import { getProjectById } from '../../services/api.ts';
-import styles from './Project.module.sass';
-import { FaArrowLeft, FaEdit, FaTrash, FaPlus, FaTimes } from 'react-icons/fa';
-import Menu from '../menu/Menu.tsx';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { addColumn, updateColumnsForProject } from '../../store/reducers/columnSlice.ts';
+import { updateColumnsForProject, addColumn, moveTaskWithinColumn, moveTaskBetweenColumns } from '../../store/reducers/column.slice.ts';
+import { projectsSocket } from "../../services/websockets/projectSocket.ts";
+import styles from './project.module.sass';
+import Menu from "../menu/Menu.tsx";
+import {RootState} from "../../store/store.ts";
 
 const Project = () => {
+    const username = useSelector((state: RootState) => state.auth.user?.username);
     const { projectName } = useParams<{ projectName: string }>();
     const searchParams = new URLSearchParams(location.search);
     const projectId = searchParams.get('id');
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    // Отримуємо колонки з Redux store
     const columns = useSelector((state: RootState) =>
         state.columns.columns.filter(col => col.projectId === parseInt(projectId || '0'))
     );
@@ -36,11 +39,15 @@ const Project = () => {
                 const projectData = await getProjectById(token, parseInt(projectId));
                 setProject(projectData);
 
-                // Якщо потрібно завантажити колонки з API, а не з localStorage:
-                // dispatch(updateColumnsForProject({
-                //     projectId: parseInt(projectId),
-                //     columns: projectData.columns // Припускаючи, що API повертає колонки
-                // }));
+                if (projectData.columns) {
+                    dispatch(updateColumnsForProject({
+                        projectId: parseInt(projectId),
+                        columns: projectData.columns.map(col => ({
+                            ...col,
+                            projectId: parseInt(projectId)
+                        }))
+                    }));
+                }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch project');
                 console.error('Error fetching project:', err);
@@ -52,9 +59,31 @@ const Project = () => {
         fetchProject();
     }, [projectId, dispatch]);
 
+    const handleDragEnd = (result) => {
+        const { source, destination, draggableId } = result;
+
+        if (!destination) return;
+
+        if (source.droppableId === destination.droppableId) {
+            dispatch(moveTaskWithinColumn({
+                columnId: parseInt(source.droppableId),
+                fromIndex: source.index,
+                toIndex: destination.index
+            }));
+        } else {
+            dispatch(moveTaskBetweenColumns({
+                sourceColumnId: parseInt(source.droppableId),
+                destinationColumnId: parseInt(destination.droppableId),
+                taskId: parseInt(draggableId),
+                newIndex: destination.index
+            }));
+        }
+    };
+
     const handleBack = () => {
         navigate('/');
     };
+
 
     const startAddingColumn = () => {
         setIsAddingColumn(true);
@@ -65,7 +94,9 @@ const Project = () => {
             const newColumn = {
                 id: Date.now(),
                 name: newColumnName.trim(),
-                projectId: parseInt(projectId)
+                projectId: parseInt(projectId),
+                tasks: [],
+                order: columns.length
             };
             dispatch(addColumn(newColumn));
             setNewColumnName('');
@@ -91,75 +122,21 @@ const Project = () => {
 
     return (
         <div className={styles.container}>
-            <Menu />
-
+            {username && <Menu />}
+            <ProjectHeader handleBack={handleBack} projectName={project?.name} />
             <div className={styles.projectContainer}>
-                <div className={styles.header}>
-                    <button onClick={handleBack} className={styles.backButton}>
-                        <FaArrowLeft /> Back to projects
-                    </button>
-                </div>
-
                 <div className={styles.sections}>
-                    <section className={styles.tasksSection}>
-                        <h2>Tasks</h2>
-                        <div className={styles.taskBoard}>
-                            {columns.map(column => (
-                                <div key={column.id} className={styles.taskColumn}>
-                                    <h3>{column.name}</h3>
-                                    <div className={styles.taskList}>
-                                        <div className={styles.taskPlaceholder}>No tasks</div>
-                                    </div>
-                                </div>
-                            ))}
-
-                            <div className={styles.newTaskColumn}>
-                                <div className={styles.actions}>
-                                    {!isAddingColumn ? (
-                                        <button
-                                            className={styles.actionButton}
-                                            onClick={startAddingColumn}
-                                        >
-                                            <FaPlus /> Add Column
-                                        </button>
-                                    ) : (
-                                        <div
-                                            className={styles.inputContainer}
-                                            onBlur={(e) => {
-                                                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                                                    cancelAddingColumn();
-                                                }
-                                            }}
-                                        >
-                                            <input
-                                                type="text"
-                                                className={styles.columnInput}
-                                                placeholder="Enter column name"
-                                                value={newColumnName}
-                                                onChange={(e) => setNewColumnName(e.target.value)}
-                                                onKeyDown={handleKeyPress}
-                                                autoFocus
-                                            />
-                                            <div className={styles.submitWrapper}>
-                                                <button
-                                                    className={styles.confirmButton}
-                                                    onClick={handleAddColumn}
-                                                    tabIndex={0}
-                                                >
-                                                    add column
-                                                </button>
-                                                <div
-                                                    onClick={cancelAddingColumn}
-                                                >
-                                                    <FaTimes size={30} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+                    <ProjectBoard
+                        columns={columns}
+                        handleDragEnd={handleDragEnd}
+                        isAddingColumn={isAddingColumn}
+                        newColumnName={newColumnName}
+                        setNewColumnName={setNewColumnName}
+                        handleAddColumn={handleAddColumn}
+                        cancelAddingColumn={cancelAddingColumn}
+                        handleKeyPress={handleKeyPress}
+                        projectId={projectId}
+                    />
                 </div>
             </div>
         </div>

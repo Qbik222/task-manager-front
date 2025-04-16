@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { login } from "../../store/reducers/authSlice";
+import { login } from "../../store/reducers/auth.slice.ts";
 import { useNavigate, Link } from "react-router-dom";
 import { loginUser } from "../../services/api.ts";
 import styles from './Login.module.sass';

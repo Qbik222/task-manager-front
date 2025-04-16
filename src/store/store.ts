@@ -1,7 +1,7 @@
 // src/store/store.ts
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "./reducers/authSlice";
-import columnsReducer from "./reducers/columnSlice.ts";
+import authReducer from "./reducers/auth.slice.ts";
+import columnsReducer from "./reducers/column.slice.ts";
 
 export interface RootState {
   auth: AuthState;

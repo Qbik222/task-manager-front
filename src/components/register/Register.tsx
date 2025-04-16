@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { registerUser, loginUser } from '../../services/api.ts';
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from 'react-redux';
-import { login } from '../../store/reducers/authSlice';
+import { login } from '../../store/reducers/auth.slice.ts';
 import styles from './Register.module.sass';
 
 const Register = () => {

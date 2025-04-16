@@ -1,6 +1,6 @@
 import { useEffect, ReactNode } from 'react';
 import { useDispatch } from 'react-redux';
-import {login, logout, syncAuthState} from '../../store/reducers/authSlice.ts';
+import {login, logout, syncAuthState} from '../../store/reducers/auth.slice.ts';
 import { verifyToken } from '../../services/api.ts';
 import { AppDispatch } from '../../store/store.ts';
 import {useNavigate} from "react-router-dom";

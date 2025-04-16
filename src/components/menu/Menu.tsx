@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store/store.ts';
-import { logout } from '../../store/reducers/authSlice.ts';
+import { logout } from '../../store/reducers/auth.slice.ts';
 import { useNavigate } from 'react-router-dom';
 import { FaTimes, FaBars, FaHome, FaProjectDiagram, FaCog, FaUser, FaChevronDown } from 'react-icons/fa';
 import styles from './menu.module.sass';
