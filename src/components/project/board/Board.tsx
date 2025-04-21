@@ -25,8 +25,6 @@ const ProjectBoard = ({ columns, handleDragEnd, isAddingColumn, newColumnName, s
             if(data.action === "column_moved"){
                 dispatch(updateColumnsOrder(data.columns))
             }
-            
-
             console.log(data.action)
 
             // updateColumnsOrder(e.data)
@@ -38,7 +36,7 @@ const ProjectBoard = ({ columns, handleDragEnd, isAddingColumn, newColumnName, s
     <DragDropContext onDragEnd={handleDragEnd}>
         <div className={styles.taskBoard}>
             {columns.sort((a, b) => a.order - b.order).map((column) => (
-                <TaskColumn key={column.id} column={column} />
+                <TaskColumn key={column.id} column={column} projectId={projectId} />
             ))}
             <div className={styles.newTaskColumn}>
                 <AddColumn
