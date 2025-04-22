@@ -1,7 +1,7 @@
 import ProjectHeader from './header/Header.tsx';
 import ProjectBoard from './board/Board.tsx';
 import { useEffect, useState } from 'react';
-import { getProjectById } from '../../services/api.ts';
+import { getProjectById, createColumn } from '../../services/api.ts';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateColumnsForProject, addColumn, moveTaskWithinColumn, moveTaskBetweenColumns } from '../../store/reducers/column.slice.ts';
@@ -19,7 +19,7 @@ const Project = () => {
     const dispatch = useDispatch();
 
     const columns = useSelector((state: RootState) =>
-        state.columns.columns.filter(col => col.projectId === parseInt(projectId || '0'))
+        state.columns.filter(col => col.projectId === parseInt(projectId || '0'))
     );
 
     const [project, setProject] = useState<Project | null>(null);
@@ -28,18 +28,27 @@ const Project = () => {
     const [isAddingColumn, setIsAddingColumn] = useState(false);
     const [newColumnName, setNewColumnName] = useState('');
 
+
+
     useEffect(() => {
         const fetchProject = async () => {
             try {
                 setLoading(true);
-                const token = localStorage.getItem('accessToken');
-                if (!token) throw new Error('No authentication token found');
                 if (!projectId) throw new Error('Project ID not provided');
 
-                const projectData = await getProjectById(token, parseInt(projectId));
+                const projectData = await getProjectById(parseInt(projectId));
                 setProject(projectData);
 
                 if (projectData.columns) {
+                    let formColumnData ={
+                        projectId: parseInt(projectId),
+                        columns: projectData.columns.map(col => ({
+                            ...col,
+                            projectId: parseInt(projectId)
+                        }))
+                    }
+
+                    console.log(formColumnData)
                     dispatch(updateColumnsForProject({
                         projectId: parseInt(projectId),
                         columns: projectData.columns.map(col => ({
@@ -55,7 +64,6 @@ const Project = () => {
                 setLoading(false);
             }
         };
-
         fetchProject();
     }, [projectId, dispatch]);
 
@@ -98,6 +106,8 @@ const Project = () => {
                 tasks: [],
                 order: columns.length
             };
+
+            createColumn(newColumn)
             dispatch(addColumn(newColumn));
             setNewColumnName('');
             setIsAddingColumn(false);
@@ -130,6 +140,7 @@ const Project = () => {
                         columns={columns}
                         handleDragEnd={handleDragEnd}
                         isAddingColumn={isAddingColumn}
+                        setIsAddingColumn={setIsAddingColumn}
                         newColumnName={newColumnName}
                         setNewColumnName={setNewColumnName}
                         handleAddColumn={handleAddColumn}

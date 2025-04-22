@@ -33,27 +33,29 @@ export default function Login() {
             const response = await loginUser(formData);
             console.log('Server response after login:', response);
 
-            const { access, refresh } = response;
-            const username = formData.username; // Беремо username з форми
+            const { access, refresh, user_id } = response;
 
-            // Зберігаємо ВСІ необхідні дані в localStorage
+            console.log(user_id)
+
+            const username = formData.username;
+            const userId = user_id
+
             localStorage.setItem('accessToken', access);
             localStorage.setItem('username', username);
+            localStorage.setItem('userId', user_id);
 
-            // Оновлюємо Redux store
+
             dispatch(login({
-                user: { username },
+                user: { username, userId },
                 tokens: {
                     access,
                 }
             }));
 
             navigate("/home");
-        } catch (error) {
+        } catch (error: any) {
             console.error('Login error:', error);
             setError(error.response?.data?.message || "Login failed. Please try again.");
-
-            // Очищаємо тільки токени при помилці (username залишаємо)
             localStorage.removeItem('accessToken');
         } finally {
             setIsLoading(false);

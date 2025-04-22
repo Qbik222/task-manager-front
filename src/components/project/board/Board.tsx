@@ -7,29 +7,29 @@ import {projectsSocket} from "../../../services/websockets/projectSocket.ts";
 import {useEffect} from "react";
 import {updateColumnsOrder} from "../../../store/reducers/column.slice.ts";
 
-const ProjectBoard = ({ columns, handleDragEnd, isAddingColumn, newColumnName, setNewColumnName, handleAddColumn, cancelAddingColumn, handleKeyPress, projectId }) => {
+const ProjectBoard = ({ columns, handleDragEnd, isAddingColumn, setIsAddingColumn, newColumnName, setNewColumnName, handleAddColumn, cancelAddingColumn, handleKeyPress, projectId }) => {
     const dispatch = useDispatch()
 
-    const socket = projectsSocket(`/ws/projects/${projectId}/`)
-
-    console.log(socket)
-
-
-
-    useEffect(() => {
-        socket.addEventListener("message", (e) =>{
-            const data = JSON.parse(e.data)
-
-            // console.log(data.action)
-
-            if(data.action === "column_moved"){
-                dispatch(updateColumnsOrder(data.columns))
-            }
-            console.log(data.action)
-
-            // updateColumnsOrder(e.data)
-        })
-    }, [dispatch]);
+    // const socket = projectsSocket(`/ws/projects/${projectId}/`)
+    //
+    // console.log(socket)
+    //
+    //
+    //
+    // useEffect(() => {
+    //     socket.addEventListener("message", (e) =>{
+    //         const data = JSON.parse(e.data)
+    //
+    //         // console.log(data.action)
+    //
+    //         if(data.action === "column_moved"){
+    //             dispatch(updateColumnsOrder(data.columns))
+    //         }
+    //         console.log(data.action)
+    //
+    //         // updateColumnsOrder(e.data)
+    //     })
+    // }, [dispatch]);
 
 
     return(
@@ -46,6 +46,7 @@ const ProjectBoard = ({ columns, handleDragEnd, isAddingColumn, newColumnName, s
                     handleAddColumn={handleAddColumn}
                     cancelAddingColumn={cancelAddingColumn}
                     handleKeyPress={handleKeyPress}
+                    setIsAddingColumn={setIsAddingColumn}
                 />
             </div>
         </div>

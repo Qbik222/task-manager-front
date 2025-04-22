@@ -130,3 +130,53 @@
   font-size: 14px
   color: #ff6b6b
   margin-bottom: 10px
+
+.sectionTop
+  display: flex
+  align-items: center
+  justify-content: space-between
+
+.projectAdd
+  background: #2c3e50
+  color: white
+  border-radius: 5px
+  padding: 10px
+  font-size: 10px
+  text-align: center
+  text-transform: uppercase
+  transition: background-color .4s ease-in-out
+  &:hover
+    background: #1f2937
+    cursor: pointer
+
+.modalWindow
+  position: fixed
+  right: 0
+  top: 0
+  z-index: 20
+  transform: translate(100%, 0)
+  transition: transform .4s ease-in-out
+  width: 50%
+  height: 100%
+  background: linear-gradient(135deg, rgba(28, 37, 54, 0.6), rgba(44, 62, 80, 0.6))
+  backdrop-filter: blur(12px)
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2)
+  border: 1px solid rgba(255, 255, 255, 0.08)
+
+.closeModal
+  color: white
+  border-radius: 4px
+  border: 1px solid #ededed
+  position: absolute
+  z-index: 10
+  right: 20px
+  top: 10px
+  transform: translate(0, 0)
+  padding: 10px 20px
+  background: transparent
+  &:hover
+    border: 1px solid #ededed
+    cursor: pointer
+
+.showModal
+  transform: none

@@ -1,4 +1,24 @@
+import { store } from '../store/store.ts';
+
 const BASE_URL = 'http://127.0.0.1:8000';
+
+const state = store.getState();
+
+const token = state.auth.tokens.access
+
+
+type NewProjectPayload = {
+    name: string;
+    description: string;
+    users: number[];
+};
+
+interface Column {
+    name: string;
+    project: number;
+    order: number;
+}
+
 
 interface RegisterData {
     username: string;
@@ -30,6 +50,60 @@ interface Task {
     labels: string[];
 }
 
+interface Users {
+    id: number;
+    username: string;
+    email: string
+}
+
+export const createColumn = async (columnData):Promise<Column> =>{
+    try {
+        const formData = {
+            name: columnData.name,
+            project: columnData.projectId,
+            order: columnData.order
+        }
+        const response = await fetch(`${BASE_URL}/api/columns/`,{
+            method: "POST",
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    }
+    catch (error){
+        console.error('Error fetching tasks:', error);
+        throw error;
+    }
+}
+
+export const getAllUsers = async (token: string): Promise<Users[]> => {
+    try {
+        const response = await fetch(`${BASE_URL}/api/users/`, {
+            method: "GET",
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return Array.isArray(data) ? data : [data];
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+        throw error;
+    }
+};
+
+
 export const getTasks = async (token: string): Promise<Task[]> => {
     try {
         const response = await fetch(`${BASE_URL}/api/tasks/`, {
@@ -52,7 +126,7 @@ export const getTasks = async (token: string): Promise<Task[]> => {
     }
 };
 
-export const getProjectById = async (token: string, id: number): Promise<Project> => {
+export const getProjectById = async ( id: number): Promise<Project> => {
     try {
         const response = await fetch(`${BASE_URL}/project/${id}/full`, {
             headers: {
@@ -71,6 +145,7 @@ export const getProjectById = async (token: string, id: number): Promise<Project
         throw error;
     }
 };
+
 
 export const getProjects = async (token: string): Promise<Project[]> => {
     try {
@@ -93,6 +168,33 @@ export const getProjects = async (token: string): Promise<Project[]> => {
         throw error;
     }
 };
+
+export const createProject = async (
+    token: string,
+    projectData: NewProjectPayload
+): Promise<Project> => {
+    try {
+        const response = await fetch(`${BASE_URL}/api/projects/`, {
+            method: "POST",
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(projectData),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error creating project:', error);
+        throw error;
+    }
+};
+
 export const verifyToken = async (token: string): Promise<boolean> => {
     try {
         const response = await fetch(`${BASE_URL}/api/token/verify/`, {

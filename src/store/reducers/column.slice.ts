@@ -14,14 +14,11 @@ interface Column {
     projectId: number;
 }
 
-interface ColumnsState {
-    columns: Column[];
-}
+type ColumnsState = Column[];
 
-const initialState: ColumnsState = {
-    columns: [],
-};
+const initialState: ColumnsState = [];
 
+// Action creators for task movement
 export const moveTaskWithinColumn = createAction<{
     columnId: number;
     fromIndex: number;
@@ -40,40 +37,56 @@ const columnSlice = createSlice({
     initialState,
     reducers: {
         addColumn: (state, action: PayloadAction<Omit<Column, 'tasks' | 'order'>>) => {
+            const projectColumns = state.filter(col => col.projectId === action.payload.projectId);
             const newColumn: Column = {
                 ...action.payload,
                 tasks: [],
-                order: state.columns.filter(col => col.projectId === action.payload.projectId).length
+                order: projectColumns.length
             };
-            state.columns.push(newColumn);
+            state.push(newColumn);
         },
 
         updateColumnsForProject: (state, action: PayloadAction<{
             projectId: number;
             columns: Column[];
         }>) => {
-            // Видаляємо старі колонки проекту
-            state.columns = state.columns.filter(col => col.projectId !== action.payload.projectId);
-            // Додаємо нові колонки
-            state.columns.push(...action.payload.columns);
+            // Remove existing columns for this project
+            const filteredState = state.filter(col => col.projectId !== action.payload.projectId);
+            // Add new columns
+            return [...filteredState, ...action.payload.columns];
         },
-        updateColumnsOrder: (state, action: PayloadAction<{
-            columns: {id: number, orded: number}[]
-        }>) =>{
-            action.payload.forEach(({id, order}) =>{
-                const column = state.columns.find(col => col.id === id)
-                if (column){
-                    column.order = order
-                }
-            })
-        }
 
+        updateColumnsOrder: (state, action: PayloadAction<{
+            columns: {id: number, order: number}[]
+        }>) => {
+            action.payload.columns.forEach(({id, order}) => {
+                const column = state.find(col => col.id === id);
+                if (column) {
+                    column.order = order;
+                }
+            });
+        },
+
+        // Додаткові редюсери для більш гнучкого керування
+        updateColumn: (state, action: PayloadAction<{
+            id: number;
+            changes: Partial<Column>;
+        }>) => {
+            const column = state.find(col => col.id === action.payload.id);
+            if (column) {
+                Object.assign(column, action.payload.changes);
+            }
+        },
+
+        removeColumn: (state, action: PayloadAction<number>) => {
+            return state.filter(col => col.id !== action.payload);
+        }
     },
     extraReducers: (builder) => {
         builder
             .addCase(moveTaskWithinColumn, (state, action) => {
                 const { columnId, fromIndex, toIndex } = action.payload;
-                const column = state.columns.find(col => col.id === columnId);
+                const column = state.find(col => col.id === columnId);
 
                 if (column && column.tasks[fromIndex]) {
                     const [movedTask] = column.tasks.splice(fromIndex, 1);
@@ -82,13 +95,11 @@ const columnSlice = createSlice({
             })
             .addCase(moveTaskBetweenColumns, (state, action) => {
                 const { sourceColumnId, destinationColumnId, taskId, newIndex } = action.payload;
-
-                const sourceColumn = state.columns.find(col => col.id === sourceColumnId);
-                const destinationColumn = state.columns.find(col => col.id === destinationColumnId);
+                const sourceColumn = state.find(col => col.id === sourceColumnId);
+                const destinationColumn = state.find(col => col.id === destinationColumnId);
 
                 if (sourceColumn && destinationColumn) {
                     const taskIndex = sourceColumn.tasks.findIndex(t => t.id === taskId);
-
                     if (taskIndex !== -1) {
                         const [movedTask] = sourceColumn.tasks.splice(taskIndex, 1);
                         destinationColumn.tasks.splice(newIndex, 0, movedTask);
@@ -98,6 +109,12 @@ const columnSlice = createSlice({
     }
 });
 
-export const { addColumn, updateColumnsForProject, updateColumnsOrder } = columnSlice.actions;
+export const {
+    addColumn,
+    updateColumnsForProject,
+    updateColumnsOrder,
+    updateColumn,
+    removeColumn
+} = columnSlice.actions;
 
 export default columnSlice.reducer;
