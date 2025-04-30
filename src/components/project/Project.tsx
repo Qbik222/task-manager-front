@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react';
 import { getProjectById, createColumn } from '../../services/api.ts';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateColumnsForProject, addColumn, moveTaskWithinColumn, moveTaskBetweenColumns } from '../../store/reducers/column.slice.ts';
+import {
+    updateColumnsForProject,
+    addColumn,
+    moveTaskWithinColumn,
+    moveTaskBetweenColumns,
+    updateColumnsOrder
+} from '../../store/reducers/column.slice.ts';
 import { projectsSocket } from "../../services/websockets/projectSocket.ts";
 import styles from './project.module.sass';
 import Menu from "../menu/Menu.tsx";
@@ -29,43 +35,47 @@ const Project = () => {
     const [newColumnName, setNewColumnName] = useState('');
 
 
+    const fetchProject = async () => {
+        try {
+            setLoading(true);
+            if (!projectId) throw new Error('Project ID not provided');
+
+            const projectData = await getProjectById(parseInt(projectId));
+            console.log(projectData)
+            setProject(projectData);
+
+            if (projectData.columns) {
+                let formColumnData ={
+                    projectId: parseInt(projectId),
+                    columns: projectData.columns.map(col => ({
+                        ...col,
+                        projectId: parseInt(projectId)
+                    }))
+                }
+
+                console.log(formColumnData.columns.length)
+                dispatch(updateColumnsForProject({
+                    projectId: parseInt(projectId),
+                    columns: projectData.columns.map(col => ({
+                        ...col,
+                        projectId: parseInt(projectId)
+                    }))
+                }));
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to fetch project');
+            console.error('Error fetching project:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
 
     useEffect(() => {
-        const fetchProject = async () => {
-            try {
-                setLoading(true);
-                if (!projectId) throw new Error('Project ID not provided');
-
-                const projectData = await getProjectById(parseInt(projectId));
-                setProject(projectData);
-
-                if (projectData.columns) {
-                    let formColumnData ={
-                        projectId: parseInt(projectId),
-                        columns: projectData.columns.map(col => ({
-                            ...col,
-                            projectId: parseInt(projectId)
-                        }))
-                    }
-
-                    console.log(formColumnData)
-                    dispatch(updateColumnsForProject({
-                        projectId: parseInt(projectId),
-                        columns: projectData.columns.map(col => ({
-                            ...col,
-                            projectId: parseInt(projectId)
-                        }))
-                    }));
-                }
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to fetch project');
-                console.error('Error fetching project:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchProject();
-    }, [projectId, dispatch]);
+
+    }, [projectId]);
 
     const handleDragEnd = (result) => {
         const { source, destination, draggableId } = result;

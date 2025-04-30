@@ -4,6 +4,7 @@ interface Task {
     id: number;
     title: string;
     description?: string;
+    order: number;
 }
 
 interface Column {
@@ -59,7 +60,7 @@ const columnSlice = createSlice({
         updateColumnsOrder: (state, action: PayloadAction<{
             columns: {id: number, order: number}[]
         }>) => {
-            action.payload.columns.forEach(({id, order}) => {
+            action.payload.forEach(({id, order}) => {
                 const column = state.find(col => col.id === id);
                 if (column) {
                     column.order = order;
@@ -91,6 +92,9 @@ const columnSlice = createSlice({
                 if (column && column.tasks[fromIndex]) {
                     const [movedTask] = column.tasks.splice(fromIndex, 1);
                     column.tasks.splice(toIndex, 0, movedTask);
+                    column.tasks.forEach((task, idx) => {
+                        task.order = idx;
+                    });
                 }
             })
             .addCase(moveTaskBetweenColumns, (state, action) => {
@@ -103,6 +107,12 @@ const columnSlice = createSlice({
                     if (taskIndex !== -1) {
                         const [movedTask] = sourceColumn.tasks.splice(taskIndex, 1);
                         destinationColumn.tasks.splice(newIndex, 0, movedTask);
+                        sourceColumn.tasks.forEach((task, idx) => {
+                            task.order = idx;
+                        });
+                        destinationColumn.tasks.forEach((task, idx) => {
+                            task.order = idx;
+                        });
                     }
                 }
             });

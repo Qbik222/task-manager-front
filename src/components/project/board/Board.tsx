@@ -10,25 +10,21 @@ import {updateColumnsOrder} from "../../../store/reducers/column.slice.ts";
 const ProjectBoard = ({ columns, handleDragEnd, isAddingColumn, setIsAddingColumn, newColumnName, setNewColumnName, handleAddColumn, cancelAddingColumn, handleKeyPress, projectId }) => {
     const dispatch = useDispatch()
 
-    // const socket = projectsSocket(`/ws/projects/${projectId}/`)
-    //
-    // console.log(socket)
-    //
-    //
-    //
+    const socket = projectsSocket(`/ws/projects/${projectId}/`)
+
+    socket.addEventListener("message", (e) =>{
+        const data = JSON.parse(e.data)
+
+        console.log(data)
+
+        if(data.action === "column_moved"){
+            dispatch(updateColumnsOrder(data.columns))
+        }
+
+    })
+
     // useEffect(() => {
-    //     socket.addEventListener("message", (e) =>{
-    //         const data = JSON.parse(e.data)
     //
-    //         // console.log(data.action)
-    //
-    //         if(data.action === "column_moved"){
-    //             dispatch(updateColumnsOrder(data.columns))
-    //         }
-    //         console.log(data.action)
-    //
-    //         // updateColumnsOrder(e.data)
-    //     })
     // }, [dispatch]);
 
 
